@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import fire from '../components/fire';
+import '../style/style.css';
 
 class UserHome extends Component {
 
@@ -11,7 +12,7 @@ class UserHome extends Component {
 
 	render() {
 		return(
-			<div className='page'>
+			<div className='container'>
 				<h1>Welcome to room {this.props.room}, {this.props.participant}!</h1>
 			</div>
 		)

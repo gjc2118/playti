@@ -47,9 +47,16 @@ class RoomHome extends Component {
     	}
 
 		return(
-			<div className='page'>
+			<div className='container'>
 			<h1> Welcome to the Game Room </h1> 
 			<h2> Room number:  {this.props.room}</h2>
+			<h3> Go on your phones to playtii.com/join and enter the room number </h3>
+			<strong><br/>Instructions:</strong>
+			<br/>You will be shown a word
+			<br/>Write down a definition
+			<br/>Players will vote on which word they think is right
+			<br/>Trick your friends into thinking your definition is correct
+			<br/>Win points by tricking others and guessing the right word
 			{this.renderPartipants()}
 			<br/>
 			<br/>

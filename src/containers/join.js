@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import { Field, reduxForm } from "redux-form";
 import {bindActionCreators} from 'redux';
-import fire from '../components/fire';
 import {Link} from 'react-router-dom';
 import {login} from "../actions";
 import {validateRoom} from "../actions";
@@ -45,7 +44,7 @@ class Join extends Component {
 		const  {error, handleSubmit, pristine, reset, submitting} = this.props;
 
 		return (
-			<div className='page'>
+			<div className='container'>
 			<form onSubmit={handleSubmit(this.onSubmit.bind(this))}>
 			<Field
 			label="Room"

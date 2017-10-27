@@ -12,7 +12,7 @@ export default class App extends Component {
 
   render() {
     return (
-    <div className='page'>
+    <div className='container'>
           <h1>Welcome to Playtii. </h1>
           <br></br>
           <Link className = "btn btn-primary" to='/home'>
@@ -27,4 +27,3 @@ export default class App extends Component {
   }
 
 }
-

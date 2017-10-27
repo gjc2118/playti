@@ -3,10 +3,11 @@ import {SubmissionError} from 'redux-form'
 
 export const LOGIN = "LOGIN";
 export const ROOM_CREATED = "ROOM_CREATED";
+export const ROUND_DONE = 'ROUND_DONE';
 
 export function createRoom() {
 	  var text = "";
-	  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	  for (var i = 0; i < 5; i++)
 	    text += possible.charAt(Math.floor(Math.random() * possible.length));
 		
@@ -34,6 +35,19 @@ export function login(values, callback) {
   };
 }
 
+// NEED TO CHANGE THIS
+export function finishRound(values, callback) {
+	// let roomsRef = fire.database().ref('rooms');
+	// roomsRef.child(values.room).child('participants').child(values.name).set({name: values.name});
+  return {
+    type: ROUND_DONE,
+    payload: {
+    	round_nb: values,
+    	status: 'voting'
+    }
+  };
+}
+
 //this is not being used
 export function validateRoom(value){
 
@@ -46,11 +60,4 @@ export function validateRoom(value){
       		})
 		    }
 		});
-}
-
-
-export function seed(){
-	let seed = [
-	{name: 'Shemomedjamo', country: 'Georgian', definition: 'when you’re really full, but your meal is just so delicious, you can’t stop eating it'}
-	]
 }

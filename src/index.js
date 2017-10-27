@@ -3,10 +3,8 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import './index.css';
 // import App from './App';
 import registerServiceWorker from './registerServiceWorker';
-
 
 import App from './components/app';
 import RoomHome from './containers/room_home';
@@ -14,7 +12,6 @@ import Join from './containers/join';
 import UserHome from './containers/user_home';
 import GameHome from './containers/game_home';
 import reducers from './reducers';
-import * as firebase from 'firebase';
 
 const createStoreWithMiddleware = applyMiddleware()(createStore);
 
