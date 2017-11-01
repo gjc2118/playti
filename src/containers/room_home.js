@@ -13,7 +13,7 @@ class RoomHome extends Component {
 	 		participants: []
 	 	}
 	 }
-
+ 
 	 componentDidMount(){
         var name = this.props.createRoom().payload.room;
 	 	let roomsRef = fire.database().ref('rooms');

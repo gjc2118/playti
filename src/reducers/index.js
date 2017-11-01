@@ -10,7 +10,7 @@ const rootReducer = combineReducers({
 	participant: participantReducer,
 	form: formReducer,
 	word: wordReducer,
-	round: roundReducer
+	round: roundReducer // this is round.round_nb and round.status
 });
 
 export default rootReducer;

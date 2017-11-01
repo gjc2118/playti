@@ -3,7 +3,9 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {createRoom} from "../actions";
 import fire from '../components/fire';
+import {startRound} from "../actions";
 import {finishRound} from "../actions";
+
 
 class RoomHome extends Component {
 
@@ -13,7 +15,8 @@ class RoomHome extends Component {
 	 }
 
 	 componentDidMount(){
-	 	
+	 	// debugger;
+	 	this.props.startRound({room: this.props.room, round_nb: this.props.round.round_nb});
 	 	var elem = document.getElementById("myBar");   
 		  var width = 100;
 		  	var id = setInterval(() => {
@@ -30,7 +33,6 @@ class RoomHome extends Component {
 
 		let word = this.props.word[this.props.round.round_nb-1].word;
 		console.log('word: ' + word);
-		console.log('round: ' + this.props.round.round_nb);
 
 		// NEED TO SHOW WHEN USERS SUBMITTED WORDS - NICE TO HAVE
 	 	// let roomsRef = fire.database().ref('rooms');
@@ -81,7 +83,9 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch){
-	return bindActionCreators({finishRound: finishRound}, dispatch)
+	return bindActionCreators({finishRound: finishRound,
+		startRound: startRound}, 
+		dispatch)
 
 }
 
