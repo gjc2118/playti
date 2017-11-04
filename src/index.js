@@ -13,6 +13,11 @@ import UserHome from './containers/user_home';
 import GameHome from './containers/game_home';
 import reducers from './reducers';
 
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap-theme.css';
+
+
+
 const createStoreWithMiddleware = applyMiddleware()(createStore);
 
 
