@@ -118,6 +118,9 @@ class UserHome extends Component {
   		// randomize the responses
   		var choices = this.shuffle(this.state.definitions);
 		return choices.map(definition => {
+			// only show if it is not your vote
+			if (this.props.participant == definition.participant)
+				return;
 			return (
 				<div><Button key={definition.participant} type="submit" className="btn btn-secondary" onClick={() => this.onSubmitVote({definition})}>{definition.definition}
 				</Button><br/>

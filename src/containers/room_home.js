@@ -47,7 +47,7 @@ class RoomHome extends Component {
 			<div className='container'>
 			<h1> Welcome to the Game Room </h1> 
 			<h2> Room number:  {this.props.room}</h2>
-			<h3> Go on your phones to playtii.herokuapp.com/join and enter the room number </h3>
+			<h3> Go on your phones to playti.herokuapp.com/join and enter the room number </h3>
 			<strong><br/>Instructions:</strong>
 			<br/>You will be shown a word
 			<br/>Write down a definition

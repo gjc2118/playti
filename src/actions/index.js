@@ -8,6 +8,7 @@ export const ROUND_STARTED = 'ROUND_STARTED';
 export const SUBMIT = 'SUBMIT';
 export const VOTE = 'VOTE';
 export const VOTE_DONE = 'VOTE_DONE';
+export const UPDATE_VOTE = 'UPDATE_VOTE';
 
 
 // Room status: pending, submitting, voting, results, finished
@@ -67,7 +68,7 @@ export function startRound(values, callback) {
     payload: {
     	round_nb: values.round_nb,
     	status: 'submitting',
-    	word: values.word
+    	word: values.word,
     }
   };
 }
@@ -80,28 +81,38 @@ export function finishRound(values, callback) {
     type: ROUND_DONE,
     payload: {
     	round_nb: values.round_nb,
-    	status: 'voting'
+    	status: 'voting',
+    	word: values.word
     }
   };
 }
 
-
+					// results: results, 
+					// round_nb: this.props.round.round_nb,
+					// status: this.props.round.status
+export function updateVote(values, callback){
+	return {
+		type: UPDATE_VOTE,
+		payload: {
+			results: values.results
+		}
+	}
+}
 
 			      	// round_nb: this.props.round.round_nb,
 			      	// room: this.props.room
-			      	// THIS NEEDS A PROMISE ELSE IT RESULTS EMPTY. USING TIMEOUT FOR NOW
-// TODO: FINISH VOTE FUNCTION
+			      	// mark status as results
 export function finishVote(values, callback) {
 	let roomsRef = fire.database().ref('rooms');
 	roomsRef.child(values.room).child('round').set({status: 'results'});
-	return{
-		type: VOTE_DONE,
-    	payload: {
-	    	round_nb: values.round_nb,
-	    	status: 'results'
-		   }
-	}
-
+			return{
+				type: VOTE_DONE,
+    			payload: {
+	    			round_nb: values.round_nb,
+	    			status: 'results',
+	    			word: values.word
+		   		}
+			}
 }
 			// participant
 			// participant_voted: values.definition.participant,
@@ -123,7 +134,7 @@ export function vote(values, callback){
 
 	});
 	return {
-		type: VOTE, 
+		type: UPDATE_VOTE, 
 		payload: {
 
 		}
@@ -158,6 +169,7 @@ export function submit(values, callback) {
 			vote: 0,
 			correct: 0
 		});
+	// IF LAST PERSON TO SUBMIT, THEN UPDATE DB STATE AND ENSURE IT FLOWS THROUGH GAME HOME
   return {
     type: SUBMIT,
     payload: {

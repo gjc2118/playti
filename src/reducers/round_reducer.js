@@ -4,19 +4,23 @@ export default function (state = {
 			}, action){
 	switch(action.type) {
 		case 'ROUND_STARTED':
-			console.log('round reducer caught: round '+action.payload.round_nb + ' started');
+			console.log('Round '+action.payload.round_nb + ' started!');
 			console.log('round is now: '+action.payload.status);
+			console.log('word is:'+action.payload.word.word);
 			return action.payload
 
 		case 'ROUND_DONE':
-			console.log('round reducer caught: round '+action.payload.round_nb + ' done');
+			console.log('Round '+action.payload.round_nb + ' done!');
 			console.log('round is now: '+action.payload.status);
+			console.log('word is:'+action.payload.word.word);
 			return action.payload
 
 		case 'VOTE_DONE':
-			console.log('round reducer caught: vote on round '+action.payload.round_nb + ' done');
+			console.log('Vote on round '+action.payload.round_nb + ' done!');
 			console.log('round is now: '+action.payload.status);
+			console.log('word is:'+action.payload.word.word);
 			return action.payload
+
 	}
 	return state;
 }
