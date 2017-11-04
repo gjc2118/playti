@@ -70,9 +70,9 @@ class RoomHome extends Component {
 		renderBar(status) {
 			var elem = document.getElementById("myBar");   
 		  	var width = 100;
-		  	var timer = 50;
+		  	var timer = 1000;
 		  	if (status == 'voting') 
-		  		timer = 50;
+		  		timer = 100;
 
 		  	var id = setInterval(() => {
 		    if (width == 0) {

@@ -161,7 +161,6 @@ export function score(values, callback){
 // this will only update the database, not the app state
 // dont understand why I need to return a type here... maybe I am not using redux correctly
 export function submit(values, callback) {
-	// debugger;
 	let roomsRef = fire.database().ref('rooms');
 	roomsRef.child(values.room).child('definitions').child(values.round_nb).child(values.participant).set({
 			definition: values.definition,
@@ -169,7 +168,9 @@ export function submit(values, callback) {
 			vote: 0,
 			correct: 0
 		});
-	// IF LAST PERSON TO SUBMIT, THEN UPDATE DB STATE AND ENSURE IT FLOWS THROUGH GAME HOME
+	// IF LAST PERSON TO SUBMIT, THEN UPDATE DB STATE AND ENSURE IT FLOWS THROUGH GAME HOME TO CALL 
+	// if definitions.round.child.count-1 (for admin) == particpant.child.count, then update round.status to voting
+
   return {
     type: SUBMIT,
     payload: {
