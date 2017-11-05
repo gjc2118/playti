@@ -49,7 +49,7 @@ class Join extends Component {
 			{error && <strong>{error}</strong>}
 			<Field
 			label="Name"
-			name="Your name"
+			name="name"
 			component={this.renderField}
 			/>
 			<button type="submit" className="btn btn-primary">Get me in</button>

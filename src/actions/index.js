@@ -35,6 +35,7 @@ export function createRoom() {
 	}
 
 export function login(values, callback) {
+		debugger;
 		let roomsRef = fire.database().ref('rooms');
 		roomsRef.child(values.room).child('participants').child(values.name).set({name: values.name,
 			score: 0});
