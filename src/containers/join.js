@@ -6,13 +6,11 @@ import {Link} from 'react-router-dom';
 import {login} from "../actions";
 import {validateRoom} from "../actions";
 
-// help: https://redux-form.com/6.7.0/examples/submitvalidation/
-
 //TODO
-//need to push the participant name to the room via firebase and render it in the home page
 //need to validate the room number that it exists and handle errors
 //need to ensure user enters a name
-// FIGURE OUT DISPATCH...
+// once the game is started, we should prevent people from joining
+// add validation to make sure room exists
 
 class Join extends Component {
 
@@ -30,9 +28,6 @@ class Join extends Component {
       </div>
     );
   }
-
-  // ROOM VALIDATION IS CLEARLY NOT WORKING
-  // once the game is started, we should prevent people from joining
   
 	onSubmit(values) {
 		validateRoom;
@@ -54,7 +49,7 @@ class Join extends Component {
 			{error && <strong>{error}</strong>}
 			<Field
 			label="Name"
-			name="name"
+			name="Your name"
 			component={this.renderField}
 			/>
 			<button type="submit" className="btn btn-primary">Get me in</button>
@@ -65,7 +60,6 @@ class Join extends Component {
 		}
 }
 
-// add validation to make sure room exists
 function validate(values) {
 	const errors = {};
 
@@ -75,14 +69,10 @@ function validate(values) {
   if (!values.name) {
     errors.name = "Enter a name";
   }
-  // If errors is empty, the form is fine to submit
-  // If errors has *any* properties, redux form assumes form is invalid
   return errors;
 }
 
 function mapDispatchToProps(dispatch) {
-  // Whenever login is called, the result shoudl be passed
-  // to all of our reducers
   return bindActionCreators({ 
   	participant: login,
   	room: login

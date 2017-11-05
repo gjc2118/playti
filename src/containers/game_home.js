@@ -7,42 +7,18 @@ import {startRound} from "../actions";
 import {finishRound} from "../actions";
 import {finishVote} from "../actions";
 import {updateVote} from "../actions";
-
+import { Navbar, Jumbotron, Button } from 'react-bootstrap';
 
 class RoomHome extends Component {
 
-
 	constructor(props){
 	 	super(props);
-
-	 	this.state = {
-	 		results: null
-	 	}
 	 }
 
 	 componentDidMount(){
-	 	// pick a random word
-	 	let word = this.props.word[Math.floor(Math.random() * this.props.word.length)];
-	 	// word here has word, country, and definition
-		console.log('word: ' + word.word);
-	 	this.props.startRound({
-	 		room: this.props.room, 
-	 		round_nb: this.props.round.round_nb,
-	 		word: word
-	 	}
-	 	);
-		this.renderBar('submitting');
-
-		// NEED TO SHOW WHEN USERS SUBMITTED WORDS - NICE TO HAVE
-	 	// let roomsRef = fire.database().ref('rooms');
-	 	// roomsRef.child(this.props.room).child('words').set({name: word});
-	 	// roomsRef.child(name).child('participants').on('child_added', snapshot => {
-	 	// 		let participant = { name: snapshot.val().name, id: snapshot.key };
-	  //     		this.setState({ participants: [participant].concat(this.state.participants) });
-	 	// });
+	 	this.nextRound();
 
 	 	let roomsRef = fire.database().ref('rooms');
-
 		roomsRef.child(this.props.room).child('definitions').child(this.props.round.round_nb).on('value', snap => {
 			var results = [];
   			for (var key in snap.val()) {
@@ -65,44 +41,55 @@ class RoomHome extends Component {
 				});
 		});	
 
-		}
+	}
 
-		renderBar(status) {
-			var elem = document.getElementById("myBar");   
-		  	var width = 100;
-		  	var timer = 1000;
-		  	if (status == 'voting') 
-		  		timer = 100;
+	nextRound() {
+		// pick a random word. word here has word, country, and definition
+	 	let word = this.props.word[Math.floor(Math.random() * this.props.word.length)];
+	 	let round_nb = this.props.round.round_nb +1;
+	 	this.renderBar('submitting');
+	 	this.props.startRound({
+	 		room: this.props.room, 
+	 		round_nb: round_nb,
+	 		word: word
+	 	});
+	}
 
-		  	var id = setInterval(() => {
-		    if (width == 0) {
-		      clearInterval(id);
-		      if (status == 'submitting'){
-		      		this.props.finishRound({
-			      	round_nb: this.props.round.round_nb,
-			      	room: this.props.room,
-			      	word: this.props.round.word
-			      });
-		      }
-		      if (status == 'voting'){
-		      	this.props.finishVote({
-			      	round_nb: this.props.round.round_nb,
-			      	room: this.props.room,
-			      	word: this.props.round.word
-			      });
-		      }
-		    } else {
-		      width--; 
-		      elem.style.width = width + '%'; 
-		      elem.innerHTML = width * 1;
-		    }
-		  	}, timer); //ms
+	renderBar(status) {
+		var elem = document.getElementById("myBar");   
+	  	var width = 100;
+	  	var timer = 1000;
+	  	if (status == 'voting') 
+	  		timer = timer/3;
 
-		}
+	  	var id = setInterval(() => {
+	    if (width == 0) {
+	      clearInterval(id);
+	      if (status == 'submitting'){
+	      		this.props.finishRound({
+		      	round_nb: this.props.round.round_nb,
+		      	room: this.props.room,
+		      	word: this.props.round.word
+		      });
+	      }
+	      if (status == 'voting'){
+	      	this.props.finishVote({
+		      	round_nb: this.props.round.round_nb,
+		      	room: this.props.room,
+		      	word: this.props.round.word
+		      });
+	      }
+	    } else {
+	      width--; 
+	      elem.style.width = width + '%'; 
+	      elem.innerHTML = width * 1;
+	    }
+	  	}, timer); //ms
+	}
 
 
 	renderResults(){
-		if (this.props.results == null)
+		if (this.props.results.results == null)
 			return <div> No votes! </div>
 		return this.props.results.results.map(result => {
 			let final_score = result.votes*250 + result.correct_vote*500
@@ -123,6 +110,8 @@ class RoomHome extends Component {
 		var header = '';
 		if(this.props.round.status == 'submitting'){
 			header = 'The word is: '+ this.props.round.word.word;
+			// if (document.getElementById("myBar").attributes.style.value == "width: 0%;")
+			// 	this.renderBar('submitting');
 		}
 		if(this.props.round.status == 'voting'){
 			// only rerender if time is out
@@ -139,14 +128,13 @@ class RoomHome extends Component {
 				<h1> {header} </h1>
 			</div>
 		)
-
-
 	}
 	
 	render() {	
 		return(
 			<div className='container'>
 			<h1> ROUND: {this.props.round.round_nb} </h1> 
+			{this.props.round.round_nb == 4 && <h2> FINAL ROUND: BONUS ROUND! </h2>}
 			<ul>{this.renderWord()}</ul>
 			{this.props.round.status == 'results' &&
 			<div>
@@ -155,6 +143,9 @@ class RoomHome extends Component {
 				<h2> {this.props.round.word.word} means "{this.props.round.word.definition}" in {this.props.round.word.country}! </h2>
 				<br/>
 				{this.renderResults()}
+				<br/>
+				{this.props.round.round_nb != 4 
+					&& <Button type="submit" className="btn btn-secondary" onClick={() => this.nextRound()}>Next round!</Button>}
       		</div>
 			}
 			</div>
@@ -162,9 +153,7 @@ class RoomHome extends Component {
 	}
 }
 
-
 function mapStateToProps(state) {
-	//whatever is returned will show up as props inside of roomhome
 	return {room: state.room,
 		word: state.word, 
 		round: state.round,
@@ -177,7 +166,6 @@ function mapDispatchToProps(dispatch){
 		finishVote: finishVote,
 		updateVote: updateVote}, 
 		dispatch)
-
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(RoomHome);
