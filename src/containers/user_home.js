@@ -7,6 +7,12 @@ import {vote} from "../actions";
 import fire from '../components/fire';
 import '../style/style.css';
 import { Navbar, Jumbotron, Button } from 'react-bootstrap';
+import {reset} from 'redux-form';
+
+
+
+// MAKE ROUND NUMBER DYNAMIC
+// FIGURE OUT BUG WITH VOTE OPTIONS SWITCHING
 
 class UserHome extends Component {
 
@@ -29,22 +35,19 @@ class UserHome extends Component {
 // when the round is active, start over...
 
 	 componentDidMount(){
-        var name = this.props.room
 	 	let roomsRef = fire.database().ref('rooms');
 
-	 	// catch if the round status updates, if it does update round status in container
-	 	roomsRef.child(name).child('round').on('value', snap => {
-	 			let status = snap.val().status;
-	      		this.setState({status: status});
-	 	});
-
-	 	// catch if the word changes
-	 	roomsRef.child(name).child('round').on('value', snap => {
-	 		if(snap.val().word){
-	 			let word = snap.val().word.word;
-	      		this.setState({word: word});
-	 		}
-	 			
+	 	// catch if the round status updates, word changes, round chanages
+	 	roomsRef.child(this.props.room).child('round').on('value', snap => {
+	      		this.setState({
+	      			status: snap.val().status
+	      		});
+	      		if(snap.val().word){
+		      		this.setState({word: snap.val().word.word});
+	 			}
+	 			if(snap.val().round_nb){
+	 				this.setState({round_nb: snap.val().round_nb});
+	 			}
 	 	});
 	 	
 	 	// when there is a new definition submitted, update the state to include this definition
@@ -52,14 +55,14 @@ class UserHome extends Component {
   			var definitions = [];
   			for (var key in snap.val()) {
     			if (snap.val().hasOwnProperty(key)) {
-        			console.log('word: '+snap.val()[key].definition);
         			var definition = {
         				definition: snap.val()[key].definition,
         				participant: snap.val()[key].participant,
         				vote: snap.val()[key].vote
         			};
         			definitions.push(definition)
-        			this.setState({definitions: definitions});
+        			this.setState({definitions: definitions,
+        				round_nb: this.state.round_nb});
     			}
 			}
 		});
@@ -73,9 +76,6 @@ class UserHome extends Component {
       <div className={className}>
         <label>{field.label}</label>
         <input className="form-control" type="text" {...field.input} />
-        <div className="text-help">
-           {touched && error && <span>{error}</span>}
-        </div>
       </div>
     );
   }
@@ -87,8 +87,11 @@ class UserHome extends Component {
 			room:  this.props.room, 
 			round_nb: this.state.round_nb
 		});
+
+		this.props.reset('SubmitForm');
 		this.setState({status: 'waiting'})
 		console.log('Submitted!');
+		// return resetForm();
 	}
 
 	onSubmitVote(values) {

@@ -1,5 +1,5 @@
 import fire from '../components/fire';
-import {SubmissionError} from 'redux-form'
+import {SubmissionError} from 'redux-form';
 
 export const LOGIN = "LOGIN";
 export const ROOM_CREATED = "ROOM_CREATED";
@@ -9,6 +9,8 @@ export const SUBMIT = 'SUBMIT';
 export const VOTE = 'VOTE';
 export const VOTE_DONE = 'VOTE_DONE';
 export const UPDATE_VOTE = 'UPDATE_VOTE';
+export const POST_RESULTS = 'POST_RESULTS';
+export const POST_SCORE = 'POST_SCORE';
 
 // Room status: pending, submitting, voting, results, finished
 // You can only enter the room if it is pending
@@ -35,7 +37,6 @@ export function createRoom() {
 	}
 
 export function login(values, callback) {
-		debugger;
 		let roomsRef = fire.database().ref('rooms');
 		roomsRef.child(values.room).child('participants').child(values.name).set({name: values.name,
 			score: 0});
@@ -54,18 +55,20 @@ export function login(values, callback) {
 // start round should take the selected word and send it to the round. also send it to database
 // and adds the right definition of the word as part of the voting
 export function startRound(values, callback) {
+	let round_nb = values.round_nb+1;
 	let roomsRef = fire.database().ref('rooms');
 	roomsRef.child(values.room).child('round').set({
 		status: 'submitting',
+		round_nb: round_nb,
 		word: values.word});
-	roomsRef.child(values.room).child('definitions').child(values.round_nb).child('ADMIN').set({
+	roomsRef.child(values.room).child('definitions').child(round_nb).child('ADMIN').set({
 		definition: values.word.definition,
 		participant: 'ADMIN'
 	});
 	return {
 		type: ROUND_STARTED,
 		payload: {
-			round_nb: values.round_nb,
+			round_nb: round_nb,
 			status: 'submitting',
 			word: values.word,
 		}
@@ -75,7 +78,7 @@ export function startRound(values, callback) {
 // finish round updates status to voting 
 export function finishRound(values, callback) {
 	let roomsRef = fire.database().ref('rooms');
-	roomsRef.child(values.room).child('round').set({status: 'voting'});
+	roomsRef.child(values.room).child('round').update({status: 'voting'});
 	return {
 		type: ROUND_DONE,
 		payload: {
@@ -87,8 +90,6 @@ export function finishRound(values, callback) {
 }
 
 // results: results, 
-// round_nb: this.props.round.round_nb,
-// status: this.props.round.status
 export function updateVote(values, callback){
 	return {
 		type: UPDATE_VOTE,
@@ -103,7 +104,7 @@ export function updateVote(values, callback){
 // mark status as results
 export function finishVote(values, callback) {
 	let roomsRef = fire.database().ref('rooms');
-	roomsRef.child(values.room).child('round').set({status: 'results'});
+	roomsRef.child(values.room).child('round').update({status: 'results'});
 	return{
 		type: VOTE_DONE,
 		payload: {
@@ -141,21 +142,38 @@ export function vote(values, callback){
 	}
 }
 
-// TODO FIX
-// this function will be used to score after every round
-export function score(values, callback){
-
+				// result: result,
+				// final_score: final_score,
+				// room: this.props.room
+export function postResults(values, callback){
 	let roomsRef = fire.database().ref('rooms');
-	roomsRef.child(values.room).child(values.participant_voted).once('value', snap => {
-		let score = snap.val().score+100;
-		roomsRef.child(values.room).child(values.participant_voted).set({score: score});
+	let score = null;
+	roomsRef.child(values.room).child('results').child(values.result.name).once('value', snap => {
+		
+		if (snap.val()){
+			score = snap.val().score ? snap.val().score+values.final_score : values.final_score;
+		}
+		else {
+			score = values.final_score;
+		}
+		roomsRef.child(values.room).child('results').child(values.result.name).update({score: score});
 	});
+	
 	return {
-		type: VOTE, 
+		type: POST_RESULTS,
 		payload: {
-
 		}
 	}
+}
+
+export function updateScore(values, callback){
+	return {
+		type: POST_SCORE,
+		payload: {
+			score: values
+		}
+	}
+
 }
 
 // this will only update the database, not the app state

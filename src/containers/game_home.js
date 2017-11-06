@@ -7,7 +7,10 @@ import {startRound} from "../actions";
 import {finishRound} from "../actions";
 import {finishVote} from "../actions";
 import {updateVote} from "../actions";
+import {postResults} from "../actions";
+import {updateScore} from "../actions";
 import { Navbar, Jumbotron, Button } from 'react-bootstrap';
+import SweetAlert from 'sweetalert2-react';
 
 class RoomHome extends Component {
 
@@ -16,41 +19,62 @@ class RoomHome extends Component {
 	 }
 
 	 componentDidMount(){
-	 	this.nextRound();
+		this.nextRound();
 
 	 	let roomsRef = fire.database().ref('rooms');
-		roomsRef.child(this.props.room).child('definitions').child(this.props.round.round_nb).on('value', snap => {
+
+	 	roomsRef.child(this.props.room).child('results').on('value', snap => {
+	 		var results = [];
+	 		if (snap.val()){
+	 			var values = snap.val();
+	  			for (var key in values) {
+	    			if (values.hasOwnProperty(key)) {
+	    					results.push({
+		    					name: key,
+		    					score: values[key].score
+	    					})
+	    			}
+				}
+				this.props.updateScore(results);
+	 		}
+		});
+
+		roomsRef.child(this.props.room).child('definitions').on('value', snap => {
 			var results = [];
-  			for (var key in snap.val()) {
-    			if (snap.val().hasOwnProperty(key)) {
-    				if (snap.val()[key].participant != 'ADMIN'){
+
+			var values = snap.val()[this.props.round.round_nb];
+  			for (var key in values) {
+    			if (values.hasOwnProperty(key)) {
+    				if (values[key].participant != 'ADMIN'){
     					results.push({
-	    					name: snap.val()[key].participant,
-	    					definition: snap.val()[key].definition,
-	    					votes: snap.val()[key].vote,
-	    					correct_vote: snap.val()[key].correct
+	    					name: values[key].participant,
+	    					definition: values[key].definition,
+	    					votes: values[key].vote,
+	    					correct_vote: values[key].correct
     					})
     				}
     			}
 			}
-			if (this.props.round.status == 'voting')
+			if (this.props.round.status == 'voting'){
 				this.props.updateVote({
 					results: results, 
 					round_nb: this.props.round.round_nb,
 					status: this.props.round.status
 				});
-		});	
+			}
+				
+		});
 
 	}
 
 	nextRound() {
 		// pick a random word. word here has word, country, and definition
 	 	let word = this.props.word[Math.floor(Math.random() * this.props.word.length)];
-	 	let round_nb = this.props.round.round_nb +1;
+	 	
 	 	this.renderBar('submitting');
 	 	this.props.startRound({
 	 		room: this.props.room, 
-	 		round_nb: round_nb,
+	 		round_nb: this.props.round.round_nb,
 	 		word: word
 	 	});
 	}
@@ -58,9 +82,9 @@ class RoomHome extends Component {
 	renderBar(status) {
 		var elem = document.getElementById("myBar");   
 	  	var width = 100;
-	  	var timer = 1000;
+	  	var timer = 1500;
 	  	if (status == 'voting') 
-	  		timer = timer/3;
+	  		timer = timer/2;
 
 	  	var id = setInterval(() => {
 	    if (width == 0) {
@@ -78,6 +102,7 @@ class RoomHome extends Component {
 		      	room: this.props.room,
 		      	word: this.props.round.word
 		      });
+	      	this.postResultsToAction();
 	      }
 	    } else {
 	      width--; 
@@ -87,15 +112,45 @@ class RoomHome extends Component {
 	  	}, timer); //ms
 	}
 
+// TODO: show the results  by person - e.g. here is the definition, here is who voted for it, here is who wrote it. haha
+// TODO: sum up the results for the 4 rounds. Do the bonus round. Show the winners
+// TODO: make room caps lock
+// TODO: make the word lower case
+// TODO: fix the results!!
+
+	postResultsToAction(){
+		if (this.props.results.results == null)
+			return;
+
+		this.props.results.results.map(result => {
+			let final_score = result.votes*250 + result.correct_vote*500
+			this.props.postResults({
+					result: result,
+					final_score: final_score,
+					room: this.props.room
+				});
+		});
+	}
+	renderScore(){
+		if (Object.keys(this.props.score).length === 0)
+			return;
+		return this.props.score.score.map(score => {
+			return( 
+				<div> <h3>{score.name}: {score.score} </h3></div>
+			);
+		});
+	}
+
 
 	renderResults(){
 		if (this.props.results.results == null)
 			return <div> No votes! </div>
+
 		return this.props.results.results.map(result => {
 			let final_score = result.votes*250 + result.correct_vote*500
 			return (
 				<div>
-					<h2> {result.name} score: {final_score}</h2>
+					{result.name} score: {final_score}
 					<ul>
 					<li> Definition: {result.definition}</li>
 					<li> Votes (x250 pts): {result.votes}</li>
@@ -110,15 +165,14 @@ class RoomHome extends Component {
 		var header = '';
 		if(this.props.round.status == 'submitting'){
 			header = 'The word is: '+ this.props.round.word.word;
-			// if (document.getElementById("myBar").attributes.style.value == "width: 0%;")
-			// 	this.renderBar('submitting');
 		}
 		if(this.props.round.status == 'voting'){
 			// only rerender if time is out
-			if (document.getElementById("myBar").attributes.style.value == "width: 0%;")
+			if (document.getElementById("myBar").attributes.style.value == "width: 0%;"){
 				this.renderBar('voting');
+			}
 
-			header =  'Get your votes in for round'+this.props.round.round_nb+'!';
+			header =  'Get your votes in for round '+this.props.round.round_nb+'!';
 		}
 		return(
 			<div>
@@ -134,17 +188,21 @@ class RoomHome extends Component {
 		return(
 			<div className='container'>
 			<h1> ROUND: {this.props.round.round_nb} </h1> 
-			{this.props.round.round_nb == 4 && <h2> FINAL ROUND: BONUS ROUND! </h2>}
 			<ul>{this.renderWord()}</ul>
 			{this.props.round.status == 'results' &&
 			<div>
-				<h1> Results for round {this.props.round.round_nb}: </h1>
 				<br/>
-				<h2> {this.props.round.word.word} means "{this.props.round.word.definition}" in {this.props.round.word.country}! </h2>
+				<h3> {this.props.round.word.word} means "{this.props.round.word.definition}" in {this.props.round.word.country}! </h3>
+				<br/>
+				<h2>Total Score: </h2>
+				<br/>
+				{this.renderScore()}
+				<br/>
+				<h2> Results for round {this.props.round.round_nb}: </h2>
 				<br/>
 				{this.renderResults()}
 				<br/>
-				{this.props.round.round_nb != 4 
+				{this.props.round.round_nb != 3 
 					&& <Button type="submit" className="btn btn-secondary" onClick={() => this.nextRound()}>Next round!</Button>}
       		</div>
 			}
@@ -157,14 +215,17 @@ function mapStateToProps(state) {
 	return {room: state.room,
 		word: state.word, 
 		round: state.round,
-		results: state.results};
+		results: state.results,
+		score: state.score};
 }
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({finishRound: finishRound,
 		startRound: startRound,
 		finishVote: finishVote,
-		updateVote: updateVote}, 
+		postResults: postResults,
+		updateVote: updateVote,
+		updateScore: updateScore}, 
 		dispatch)
 }
 
